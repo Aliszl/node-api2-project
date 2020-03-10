@@ -89,7 +89,7 @@ router.put("/api/posts/:id", async (req, res) => {
     } else if (!id) {
       res.status(400).json({ message: "The post with the specified ID does not exist." });
     } else {
-      res.status(200).json({ message: "success" });
+      res.status(200).json(payload);
     }
   }).catch(error => {
     console.log(error);
