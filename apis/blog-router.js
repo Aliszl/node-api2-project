@@ -31,37 +31,57 @@ router.get("/api/posts/:id", async (req, res) => {
       console.log(error);
     });
 });
-//  DELETE | /api/posts/:id          | Removes the post with the specified id and returns the **deleted post object**. You may need to make additional calls to the database in order to satisfy this requirement.
-// function remove(id) {
+// POST   | /api/posts              | Creates a post using the information sent inside the `request 
+// function insert(post) {
 //   return db('posts')
-//     .where('id', Number(id))
-//     .del();
+//     .insert(post, 'id')
+//     .then(ids => ({ id: ids[0] }));
 // }
+router.post("/api/posts", async (req, res) => {
+  const payload = req.body;
+  helpers
+    .insert(payload)
+    .then(post => {
+      if (!post) {
+        res
+          .staus(400)
+          .json({ errorMessage: "Please provide title and contents for the user." });
+      } else {
+        res.status(200).json(payload);
+      }
+    })
+    .catch(error => {
+      console.log("hi",error);
+    });
+});
+//  DELETE | /api/posts/:id          | Removes the post with the specified id and returns the **deleted post object**. You may need to make additional calls to the database in order to satisfy this requirement.
 router.delete("/api/posts/:id", async (req, res) => {
   const { id } = req.params;
-  helpers.remove(id).then(post => {
-    if (!post) {
-      res
-        .status(404)
-        .json({ message: "The post with the specified ID does not exist." });
-    } else {
-      res.status(204).json({ message: "Removed " });
-    }
-  }).catch(error => {
-    console.log(error);
-   
-  });
+  helpers
+    .remove(id)
+    .then(post => {
+      if (!post) {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      } else {
+        res.status(204).json({ message: "Removed " });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+    });
 });
 
 // | GET    | /api/posts/:id/comments | Returns an array of all the comment objects associated with the post with the specified id.
 
 // router.get("/api/posts/:id/comments", async (req, res) => {
-  // function findPostComments(postId) {
-  //   return db('comments')
-  //     .join('posts', 'posts.id', 'post_id')
-  //     .select('comments.*', 'title as post')
-  //     .where('post_id', postId);
-  // }
+// function findPostComments(postId) {
+//   return db('comments')
+//     .join('posts', 'posts.id', 'post_id')
+//     .select('comments.*', 'title as post')
+//     .where('post_id', postId);
+// }
 //   const { postId } = req.params;
 //   const comments = await helpers.findPostComments();
 //   helpers
