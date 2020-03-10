@@ -3,19 +3,16 @@ const helpers = require("../data/db");
 
 // instantiating a piece of express app
 const router = express.Router();
-// invoke .get etc on the router we just created
-// THE DIFFERENT WAYS SERVER CAN RESPOND TO CLIENT
-// res.json()
-// res.send()
-// res.end() // no body in the response
 
-// | GET    | /api/posts              | Returns an array of all the post objects contained in the database.
+// invoke .get etc on the router we just created
+// THE DIFFERENT WAYS SERVER CAN RESPOND TO CLIENT: res.json(), res.send(), res.end()-no body in the response
+
+// | GET    | /api/posts     | Returns an array of all the post objects contained in the database.
 router.get("/api/posts", async (req, res) => {
   const posts = await helpers.find();
-
   res.status(200).json({ posts });
 });
-// | GET    | /api/posts/:id          | Returns the post object with the specified id.
+// | GET    | /api/posts/:id    | Returns the post object with the specified id.
 router.get("/api/posts/:id", async (req, res) => {
   const { id } = req.params;
   helpers
@@ -31,12 +28,7 @@ router.get("/api/posts/:id", async (req, res) => {
       console.log(error);
     });
 });
-// POST   | /api/posts              | Creates a post using the information sent inside the `request 
-// function insert(post) {
-//   return db('posts')
-//     .insert(post, 'id')
-//     .then(ids => ({ id: ids[0] }));
-// }
+// POST   | /api/posts     | Creates a post using the information sent inside the `request
 router.post("/api/posts", async (req, res) => {
   const payload = req.body;
   helpers
@@ -45,18 +37,31 @@ router.post("/api/posts", async (req, res) => {
       if (!post) {
         res
           .staus(400)
-          .json({ errorMessage: "Please provide title and contents for the post" });
+          .json({
+            errorMessage: "Please provide title and contents for the post"
+          });
       } else {
-        res.status(200).json(payload);
+        res.status(201).json(payload);
       }
     })
     .catch(error => {
-      console.log("hi",error);
+      console.log(error);
+      res.end();
+      res.status(500).json({
+        error: "could not update user"
+      });
     });
 });
-//  DELETE | /api/posts/:id          | Removes the post with the specified id and returns the **deleted post object**. You may need to make additional calls to the database in order to satisfy this requirement.
+//  DELETE | /api/posts/:id   | Removes the post with the specified id and returns the **deleted post object**. You may need to make additional calls to the database in order to satisfy this requirement.
 router.delete("/api/posts/:id", async (req, res) => {
   const { id } = req.params;
+  const deletedPosts =[];
+
+  helpers.findById(id).then(post =>{
+    deletedPosts.push(post);
+    res.status(200).json(post);
+  })
+
   helpers
     .remove(id)
     .then(post => {
@@ -72,61 +77,57 @@ router.delete("/api/posts/:id", async (req, res) => {
       console.log(error);
     });
 });
+
 // PUT    | /api/posts/:id          | Updates the post with the specified `id` using data from the `request body`. Returns the modified document, **NOT the original**.
-// function update(id, post) {
-//   return db('posts')
-//     .where('id', Number(id))
-//     .update(post);
-// }
 router.put("/api/posts/:id", async (req, res) => {
   const { id } = req.params;
   const payload = req.body;
-  helpers.update(id, payload).then(post => {
-    if (!post) {
-      res
-        .status(404)
-        .json({ message: "Please provide title and contents for the post" });
-    } else if (!id) {
-      res.status(400).json({ message: "The post with the specified ID does not exist." });
-    } else {
-      res.status(200).json(payload);
-    }
-  }).catch(error => {
-    console.log(error);
-    // res.status(500).json({
-    //   error: "could not update post"
-    // });
-  });
+  helpers
+    .update(id, payload)
+    .then(post => {
+      if (!post) {
+        res
+          .status(404)
+          .json({ message: "Please provide title and contents for the post" });
+      } else if (!id) {
+        res
+          .status(400)
+          .json({ message: "The post with the specified ID does not exist." });
+      } else {
+        res.status(200).json(payload);
+      }
+    })
+    .catch(error => {
+      res.status(500).json({
+        error: "could not update post"
+      });
+    });
 });
 
-
 // | GET    | /api/posts/:id/comments | Returns an array of all the comment objects associated with the post with the specified id.
-
-// router.get("/api/posts/:id/comments", async (req, res) => {
-// function findPostComments(postId) {
-//   return db('comments')
-//     .join('posts', 'posts.id', 'post_id')
-//     .select('comments.*', 'title as post')
-//     .where('post_id', postId);
-// }
-//   const { postId } = req.params;
-//   const comments = await helpers.findPostComments();
-//   helpers
-//     .findPostComments(postId)
-//     .then(post => {
-//       if (!post) {
-//         res
-//           .status(404)
-//           .json({ message: "No comments associated with that post id " });
-//       } else {
-//         res.status(200).json(comments);
-//       }
-//     })
-//     .catch(error => {
-//       console.log(error);
-//     });
-// });
+router.get("/api/posts/:id/comments", async (req, res) => {
+  const { id } = req.params;
+  const comments = await helpers.findPostComments(id);
+  helpers
+    .findPostComments(Number(id))
+    .then(post => {
+      if (!post) {
+        res
+          .status(404)
+          .json({ message: "No comments associated with that post id " });
+      } else {
+        res.status(200).json(comments);
+      }
+    })
+    .catch(error => {
+      console.log(error);
+    });
+});
 
 // | POST   | /api/posts/:id/comments | Creates a comment for the post with the specified id using information sent inside of the `request body`.
+
+
+
+
 
 module.exports = router;
