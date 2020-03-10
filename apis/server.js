@@ -17,10 +17,5 @@ app.use(express.json())
 // we connect the router using .use
 app.use(blogRouter)
 
-app.get('/hello', (req, res) => {
-  const { pal } = req.query
-  res.send(`<h1>Hello, ${pal + pal}</h1>`)
-})
-
 // kind of like "export default app"
 module.exports = app
