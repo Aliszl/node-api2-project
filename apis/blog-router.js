@@ -45,7 +45,7 @@ router.post("/api/posts", async (req, res) => {
       if (!post) {
         res
           .staus(400)
-          .json({ errorMessage: "Please provide title and contents for the user." });
+          .json({ errorMessage: "Please provide title and contents for the post" });
       } else {
         res.status(200).json(payload);
       }
@@ -72,6 +72,33 @@ router.delete("/api/posts/:id", async (req, res) => {
       console.log(error);
     });
 });
+// PUT    | /api/posts/:id          | Updates the post with the specified `id` using data from the `request body`. Returns the modified document, **NOT the original**.
+// function update(id, post) {
+//   return db('posts')
+//     .where('id', Number(id))
+//     .update(post);
+// }
+router.put("/api/posts/:id", async (req, res) => {
+  const { id } = req.params;
+  const payload = req.body;
+  helpers.update(id, payload).then(post => {
+    if (!post) {
+      res
+        .status(404)
+        .json({ message: "Please provide title and contents for the post" });
+    } else if (!id) {
+      res.status(400).json({ message: "The post with the specified ID does not exist." });
+    } else {
+      res.status(200).json({ message: "success" });
+    }
+  }).catch(error => {
+    console.log(error);
+    // res.status(500).json({
+    //   error: "could not update post"
+    // });
+  });
+});
+
 
 // | GET    | /api/posts/:id/comments | Returns an array of all the comment objects associated with the post with the specified id.
 
